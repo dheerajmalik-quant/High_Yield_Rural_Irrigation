@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project: High_Yield_Irrigation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+        :root {
+            --navy: #0F2027;
+            --blue: #203A43;
+            --teal: #2C5364;
+            --water: #00A8FF;
+            --water-dark: #0077C0;
+            --earth: #8B5A2B;
+            --bajri: #D4B895;
+            --text-main: #2C3E50;
+            --bg-light: #F8F9FA;
+            --white: #FFFFFF;
+            --shadow-3d: 0 20px 40px rgba(0,0,0,0.1), inset 0 2px 4px rgba(255,255,255,0.5);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        .deck-container {
+            width: 1280px;
+            height: 720px;
+            background: var(--bg-light);
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* Hide Scrollbar for a cleaner presentation look */
+        .deck-container::-webkit-scrollbar {
+            display: none;
+        }
+        .deck-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .slide {
+            width: 1280px;
+            height: 720px;
+            scroll-snap-align: start;
+            padding: 60px 80px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: var(--white);
+            border-bottom: 2px solid #E9ECEF;
+        }
+
+        .slide-header {
+            border-bottom: 3px solid var(--water);
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+        }
+
+        .slide-title {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 0 0 10px 0;
+        }
+
+        .slide-subtitle {
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--teal);
+            margin: 0;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .text-box {
+            width: 45%;
+            font-size: 22px;
+            line-height: 1.6;
+        }
+
+        .visual-box {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* --- Custom 3D & Data Visualizations --- */
+
+        /* Title Slide */
+        .title-slide {
+            background: linear-gradient(135deg, var(--navy), var(--blue), var(--teal));
+            color: var(--white);
+            justify-content: center;
+            text-align: center;
+        }
+        .title-slide .slide-title { color: var(--white); font-size: 64px; }
+        .title-slide .slide-subtitle { color: var(--water); font-size: 32px; }
+
+        /* 3D Cylindrical Pipe / Well Cross Section */
+        .well-cross-section {
+            width: 250px;
+            height: 400px;
+            background: linear-gradient(to right, #b0bec5 0%, #eceff1 30%, #cfd8dc 50%, #eceff1 70%, #90a4ae 100%);
+            border-radius: 10px;
+            position: relative;
+            box-shadow: var(--shadow-3d);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+        
+        .well-water {
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(to right, var(--water-dark) 0%, var(--water) 50%, var(--water-dark) 100%);
+            opacity: 0.8;
+            border-top: 4px solid rgba(255,255,255,0.4);
+        }
+
+        /* Strainer Filter */
+        .strainer-mesh {
+            position: absolute;
+            bottom: 0;
+            width: 140px;
+            height: 50%;
+            background: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.3) 5px, rgba(0,0,0,0.3) 7px);
+            border: 2px solid #546E7A;
+            z-index: 2;
+        }
+
+        /* Earth Strata Layers */
+        .strata-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+            width: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-3d);
+        }
+        .strata-topsoil { flex: 1; background: linear-gradient(to bottom, #795548, #5D4037); }
+        .strata-clay { flex: 2; background: linear-gradient(to bottom, #A1887F, #8D6E63); }
+        .strata-aquifer { flex: 3; background: linear-gradient(to bottom, var(--bajri), #BCAAA4); position: relative;}
+        .strata-water-layer { position: absolute; bottom:0; width:100%; height: 60%; background: rgba(0, 168, 255, 0.4); }
+
+        /* Concentric Geometry (The Math) */
+        .geometry-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .hole-10-inch {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, var(--bajri) 0%, #a88860 100%);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 15px 30px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .pipe-6-inch {
+            width: 210px;
+            height: 210px;
+            background: radial-gradient(circle, #E0E0E0 0%, #9E9E9E 100%);
+            border-radius: 50%;
+            border: 4px solid #757575;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            font-weight: 800;
+            font-size: 24px;
+        }
+        .gap-label {
+            position: absolute;
+            top: 40px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        /* 3D Bar Chart */
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            width: 400px;
+            height: 350px;
+            border-bottom: 4px solid var(--navy);
+            border-left: 4px solid var(--navy);
+            padding-bottom: 10px;
+            padding-left: 10px;
+        }
+        .bar {
+            width: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            padding-bottom: 10px;
+            border-radius: 8px 8px 0 0;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.2), 5px 0 15px rgba(0,0,0,0.2);
+            transition: height 0.5s;
+        }
+        .bar-old { height: 60%; background: linear-gradient(to right, #e57373, #f44336); }
+        .bar-new { height: 100%; background: linear-gradient(to right, #4dd0e1, #00bcd4); }
+
+        /* Area Chart (Reduction) */
+        .area-chart {
+            width: 400px;
+            height: 300px;
+            position: relative;
+            border-bottom: 4px solid var(--navy);
+            border-left: 4px solid var(--navy);
+        }
+        .area-shape {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom right, rgba(244, 67, 54, 0.5), transparent);
+            clip-path: polygon(0 100%, 0 20%, 100% 70%, 100% 100%);
+        }
+        .area-shape-new {
+            background: linear-gradient(to bottom right, rgba(0, 168, 255, 0.6), transparent);
+            clip-path: polygon(0 100%, 0 70%, 100% 85%, 100% 100%);
+        }
+
+        .slide-number {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #95A5A6;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="deck-container">
+
+    <div class="slide title-slide">
+        <h1 class="slide-title">Project: High-Yield Irrigation</h1>
+        <h2 class="slide-subtitle">The "Big Vision" – Upgrading the 5-Bigha Plot</h2>
+        <div class="slide-number" style="color: rgba(255,255,255,0.5);">1</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">Decoding the April 28 Run</h1>
+            <h2 class="slide-subtitle">Visualizing the 8-hour data and the 145,500L reality</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p>Data tells the story of our baseline. On April 28, the system ran for a grueling 8 hours.</p>
+                <p><strong>Total Output:</strong> 145,500 Liters.</p>
+                <p>While the volume seems high, the time expended reveals critical inefficiencies in the existing delivery mechanism. We are spending premium operational hours for baseline yields.</p>
+            </div>
+            <div class="visual-box">
+                <div style="width: 300px; height: 300px; background: conic-gradient(var(--water) 0% 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-3d); color: white; font-size: 32px; font-weight: bold; border: 10px solid #E1F5FE;">
+                    145.5k L
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">2</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">The Mystery of the Extra 2.5 Hours</h1>
+            <h2 class="slide-subtitle">How low pools and harrow-soil "stole" the water</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p>We tracked a 2.5-hour discrepancy in expected vs. actual saturation times.</p>
+                <p><strong>The Culprits:</strong></p>
+                <ul>
+                    <li>Micro-depressions (low pools) hoarding water.</li>
+                    <li>Freshly harrowed, hyper-porous topsoil acting as a sink.</li>
+                </ul>
+                <p>Surface delivery mechanisms are fighting the terrain rather than flooding it efficiently.</p>
+            </div>
+            <div class="visual-box">
+                <div class="strata-container" style="height: 300px;">
+                    <div style="flex: 1; background: #8D6E63; border-bottom: 4px solid var(--water); border-radius: 20px 20px 0 0; margin-top: 50px;"></div>
+                    <div style="flex: 2; background: #D7CCC8; position: relative;">
+                        <div style="position: absolute; top: -20px; left: 50px; width: 100px; height: 40px; background: var(--water); border-radius: 50%; opacity: 0.8;"></div>
+                        <div style="position: absolute; top: -10px; right: 80px; width: 120px; height: 30px; background: var(--water); border-radius: 50%; opacity: 0.8;"></div>
+                        <div style="text-align: center; margin-top: 60px; font-weight: bold; color: #5D4037;">Harrowed Soil Sink</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">3</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">Aquifer Health: The Heart of the Land</h1>
+            <h2 class="slide-subtitle">Proving the Sonipat aquifer's strength via bucket test</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p>The limitation is not the source; it is the straw.</p>
+                <p>Our localized bucket test indicates a highly pressurized and rapidly recharging water table in the Sonipat aquifer.</p>
+                <p>The ground holds immense potential. We just need to tap deeper into the strata to unlock continuous, high-volume flow.</p>
+            </div>
+            <div class="visual-box">
+                <div class="strata-container">
+                    <div class="strata-topsoil"></div>
+                    <div class="strata-clay"></div>
+                    <div class="strata-aquifer">
+                        <div class="strata-water-layer"></div>
+                        <div style="position: absolute; top: 40%; left: 0; width: 100%; text-align: center; color: white; font-weight: bold; font-size: 24px; text-shadow: 2px 2px 4px black;">Abundant Sonipat Aquifer</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">4</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">The Old Way: The 35ft Cavity Well</h1>
+            <h2 class="slide-subtitle">Visualizing the "suction" limitations of the current centrifugal setup</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p><strong>Current State:</strong> 35ft Cavity Well.</p>
+                <p>Centrifugal pumps rely on atmospheric pressure. At 35ft, the physics of suction begin to fail.</p>
+                <p>As the localized water dome drops during pumping, cavitation occurs, efficiency plummets, and the pump struggles to pull water, throttling our yield.</p>
+            </div>
+            <div class="visual-box">
+                <div class="well-cross-section" style="height: 250px;">
+                    <div style="width: 40px; height: 100%; background: #757575; border-left: 2px solid #424242; border-right: 2px solid #424242; position: absolute; z-index: 10;"></div>
+                    <div style="width: 150px; height: 60px; background: rgba(0, 168, 255, 0.3); border-radius: 50%; position: absolute; bottom: -30px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);"></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">5</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">The New Way: The Strainer Well</h1>
+            <h2 class="slide-subtitle">A cross-section of the 80-150ft deep rotary-drilled plan</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p><strong>Future State:</strong> Rotary-Drilled Strainer Well (80-150ft).</p>
+                <p>By bypassing the shallow clay and dropping a slotted PVC strainer pipe deep into the primary aquifer, water enters passively from all sides.</p>
+                <p>A submersible pump pushes water up, rather than sucking it, completely eliminating atmospheric lift limitations.</p>
+            </div>
+            <div class="visual-box">
+                <div class="well-cross-section">
+                    <div style="width: 80px; height: 100%; background: linear-gradient(to right, #ECEFF1, #CFD8DC); border: 2px solid #90A4AE; position: absolute; z-index: 1; display: flex; justify-content: center;">
+                        <div class="strainer-mesh"></div>
+                        <div style="position: absolute; bottom: 20%; width: 60px; height: 100px; background: #37474F; border-radius: 5px; z-index: 3;"></div> </div>
+                    <div class="well-water"></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">6</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">The Math of the 2-Inch Gap</h1>
+            <h2 class="slide-subtitle">Proving 10" Hole - 6" Pipe = 2" Annular space</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p>Geometry dictates flow efficiency.</p>
+                <ul>
+                    <li><strong>Borehole Diameter:</strong> 10 inches</li>
+                    <li><strong>Casing Pipe Diameter:</strong> 6 inches</li>
+                </ul>
+                <p>This leaves a mathematically perfect 2-inch annular gap wrapping the entire circumference of the pipe.</p>
+                <p>This gap is our engineering control zone, critical for the gravel pack.</p>
+            </div>
+            <div class="visual-box">
+                <div class="geometry-container">
+                    <div class="hole-10-inch">
+                        <span class="gap-label">10" Borehole</span>
+                        <div class="pipe-6-inch">6" Pipe</div>
+                        <div style="position: absolute; bottom: 40px; right: 50px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black;">2" Gap</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">7</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">The Porosity Catch: How Bajri Works</h1>
+            <h2 class="slide-subtitle">Visualizing why "rocks" don't block water (The Sponge Effect)</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p>We fill the 2-inch annular gap with pea-gravel (Bajri).</p>
+                <p>Counter-intuitively, packing rocks around the pipe increases flow. The Bajri acts as a highly porous 3D sponge.</p>
+                <p>It filters out fine sand that destroys pumps, while the spaces between the round gravel allow pure water to flow rapidly into the strainer without friction.</p>
+            </div>
+            <div class="visual-box">
+                <div style="width: 350px; height: 350px; background: var(--bajri); border-radius: 20px; box-shadow: var(--shadow-3d); position: relative; overflow: hidden; padding: 20px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-content: space-around; justify-content: space-around;">
+                    <div style="width: 60px; height: 60px; background: #A1887F; border-radius: 50%; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);"></div>
+                    <div style="width: 70px; height: 70px; background: #8D6E63; border-radius: 50%; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);"></div>
+                    <div style="width: 50px; height: 50px; background: #BCAAA4; border-radius: 50%; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);"></div>
+                    <div style="width: 65px; height: 65px; background: #795548; border-radius: 50%; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);"></div>
+                    <div style="width: 55px; height: 55px; background: #8D6E63; border-radius: 50%; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);"></div>
+                    <div style="width: 75px; height: 75px; background: #A1887F; border-radius: 50%; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);"></div>
+                    <div style="position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: rgba(0, 168, 255, 0.6); filter: blur(2px);"></div>
+                    <div style="position: absolute; top: 0; left: 30%; width: 4px; height: 100%; background: rgba(0, 168, 255, 0.6); filter: blur(2px);"></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">8</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">Performance: 18K vs. 30K L/Hr</h1>
+            <h2 class="slide-subtitle">A 66% increase in speed</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p>The upgrade shifts our operational paradigm.</p>
+                <p>Moving from the 35ft cavity suction model to a deep strainer submersible model unlocks massive flow rate gains.</p>
+                <h3 style="color: var(--navy); font-size: 28px;">Result: +66% Throughput.</h3>
+                <p>We turn a trickle into a torrent.</p>
+            </div>
+            <div class="visual-box">
+                <div class="chart-container">
+                    <div class="bar bar-old">18,000 L</div>
+                    <div class="bar bar-new">30,000 L</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">9</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">Time Efficiency: 12 Hours to 7 Hours</h1>
+            <h2 class="slide-subtitle">Reduction in diesel/electricity and labor time</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p>Speed directly translates to cost reduction.</p>
+                <p>By increasing the flow rate, the total time required to saturate the 5-Bigha plot drops drastically.</p>
+                <ul>
+                    <li><strong>Labor:</strong> Less standing time.</li>
+                    <li><strong>Energy:</strong> 41% reduction in electrical/diesel unit consumption per irrigation cycle.</li>
+                </ul>
+            </div>
+            <div class="visual-box">
+                <div class="area-chart">
+                    <div class="area-shape"></div>
+                    <div class="area-shape-new"></div>
+                    <div style="position: absolute; top: 10px; left: 10px; font-weight: bold; color: #f44336;">Old: 12 Hrs</div>
+                    <div style="position: absolute; bottom: 40px; right: 20px; font-weight: bold; color: var(--water-dark);">New: 7 Hrs</div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">10</div>
+    </div>
+
+    <div class="slide">
+        <div class="slide-header">
+            <h1 class="slide-title">Future-Proofing: Compressor Cleaning</h1>
+            <h2 class="slide-subtitle">Cleaning the well without ever pulling the pipe</h2>
+        </div>
+        <div class="content">
+            <div class="text-box">
+                <p>Asset maintenance is built into the design.</p>
+                <p>Over years, silt can build up. Instead of pulling heavy iron pipes, we utilize high-pressure air compressors.</p>
+                <p>Air is forced down the well, violently agitating the water, flushing out sediment through the top without heavy mechanical lifting. The asset is permanently serviceable.</p>
+            </div>
+            <div class="visual-box">
+                <div class="well-cross-section">
+                    <div style="width: 60px; height: 100%; border: 2px dashed #90A4AE; position: absolute; z-index: 1;"></div>
+                    <div style="position: absolute; bottom: 10%; width: 20px; height: 80%; background: linear-gradient(to right, #BDBDBD, #9E9E9E); z-index: 2;"></div> <div style="position: absolute; bottom: 20%; width: 10px; height: 10px; background: white; border-radius: 50%; box-shadow: 0 -20px 0 white, 15px -40px 0 white, -15px -60px 0 white; opacity: 0.8; animation: bubble 2s infinite;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">11</div>
+    </div>
+
+    <div class="slide title-slide" style="background: linear-gradient(135deg, var(--blue), var(--navy));">
+        <h1 class="slide-title">Conclusion: A Legacy for the Farm</h1>
+        <h2 class="slide-subtitle">The final ROI – Sustainable water for the next 20 years</h2>
+        <div class="content" style="flex-direction: column; justify-content: center; text-align: center; margin-top: 40px;">
+            <p style="font-size: 28px; max-width: 800px; color: #E0E0E0;">
+                By upgrading to a deep strainer well, we transition from reactive pumping to engineered asset management.
+            </p>
+            <div style="display: flex; gap: 40px; margin-top: 40px;">
+                <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 12px; border-top: 4px solid var(--water);">
+                    <h3 style="margin: 0; font-size: 36px; color: white;">+66%</h3>
+                    <p style="margin: 10px 0 0 0; color: #B0BEC5;">Yield Output</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 12px; border-top: 4px solid var(--water);">
+                    <h3 style="margin: 0; font-size: 36px; color: white;">-41%</h3>
+                    <p style="margin: 10px 0 0 0; color: #B0BEC5;">Time/Energy Cost</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 12px; border-top: 4px solid var(--water);">
+                    <h3 style="margin: 0; font-size: 36px; color: white;">20 Yrs</h3>
+                    <p style="margin: 10px 0 0 0; color: #B0BEC5;">Asset Lifespan</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number" style="color: rgba(255,255,255,0.5);">12</div>
+    </div>
+
+</div>
+
+</body>
+</html>

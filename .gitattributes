@@ -1,0 +1,9 @@
+# Set default behavior for all files
+* text=auto
+
+# Enforce specific file types to be recognized correctly in GitHub language stats
+*.html linguist-language=HTML
+*.css linguist-language=CSS
+
+# Exclude documentation from language statistics
+docs/* linguist-vendored
