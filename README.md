@@ -6,7 +6,7 @@
 A comprehensive, interactive web-based consulting deck detailing the engineering upgrade of a 5-Bigha agricultural plot from a legacy shallow cavity system to a deep-strainer submersible architecture.
 
 ## 🔗 Live Presentation
-**[View the Live Interactive Deck Here](https://YOUR-GITHUB-USERNAME.github.io/high-yield-irrigation/)** *(Note: Add your actual link here after Step 4)*
+**View the Live Interactive Deck Here >> https://dheerajmalik-quant.github.io/High_Yield_Rural_Irrigation/
 
 ---
 
